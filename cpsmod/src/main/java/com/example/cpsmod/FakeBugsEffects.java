@@ -5,6 +5,7 @@ import net.minecraft.client.toast.SystemToast;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.ZombieEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.sound.SoundCategory;
@@ -20,16 +21,32 @@ public class FakeBugsEffects {
     public static void runDupe(MinecraftClient client) {
         if (client.player == null || client.world == null) return;
 
-        int slot = client.player.getInventory().selectedSlot;
-        ItemStack heldStack = client.player.getInventory().getStack(slot);
+        PlayerInventory inventory = client.player.getInventory();
+        int slot = inventory.selectedSlot;
+        ItemStack heldStack = inventory.getStack(slot);
         if (heldStack.isEmpty()) {
             feedback(client, "§c[fakebugs] Hold an item first.");
             return;
         }
 
-        ItemStack doubled = heldStack.copy();
-        doubled.setCount(Math.min(doubled.getMaxCount(), heldStack.getCount() * 2));
-        client.player.getInventory().setStack(slot, doubled);
+        int targetSlot = -1;
+        for (int i = 0; i < 9; i++) {
+            if (i != slot && inventory.getStack(i).isEmpty()) {
+                targetSlot = i;
+                break;
+            }
+        }
+
+        if (targetSlot != -1) {
+            inventory.setStack(targetSlot, heldStack.copy());
+        } else if (heldStack.isStackable()) {
+            ItemStack doubled = heldStack.copy();
+            doubled.setCount(Math.min(doubled.getMaxCount(), heldStack.getCount() * 2));
+            inventory.setStack(slot, doubled);
+        } else {
+            feedback(client, "§c[fakebugs] No empty hotbar slot to dupe into.");
+            return;
+        }
 
         ItemStack ghostStack = heldStack.copy();
         Vec3d pos = client.player.getPos().add(0, 0.3, 0);
@@ -42,7 +59,7 @@ public class FakeBugsEffects {
         );
         client.world.addEntity(ghostItem);
 
-        feedback(client, "§7[fakebugs] hotbar count doubled + ghost item dropped (visual only)");
+        feedback(client, "§7[fakebugs] duped into hotbar + ghost item dropped (visual only)");
     }
 
     public static void runGhostMob(MinecraftClient client) {
