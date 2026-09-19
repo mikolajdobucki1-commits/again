@@ -24,6 +24,7 @@ jobs:
           gradle-version: '8.12.1'
 
       - name: Build with Gradle (generates wrapper if missing, then builds)
+        working-directory: cpsmod
         run: |
           if [ ! -f "./gradlew" ]; then
             gradle wrapper --gradle-version 8.12.1
@@ -35,4 +36,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: cpsmod-jar
-          path: build/libs/*.jar
+          path: cpsmod/build/libs/*.jar
