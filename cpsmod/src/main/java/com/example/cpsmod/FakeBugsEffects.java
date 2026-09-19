@@ -20,11 +20,16 @@ public class FakeBugsEffects {
     public static void runDupe(MinecraftClient client) {
         if (client.player == null || client.world == null) return;
 
-        ItemStack heldStack = client.player.getMainHandStack();
+        int slot = client.player.getInventory().selectedSlot;
+        ItemStack heldStack = client.player.getInventory().getStack(slot);
         if (heldStack.isEmpty()) {
             feedback(client, "§c[fakebugs] Hold an item first.");
             return;
         }
+
+        ItemStack doubled = heldStack.copy();
+        doubled.setCount(Math.min(doubled.getMaxCount(), heldStack.getCount() * 2));
+        client.player.getInventory().setStack(slot, doubled);
 
         ItemStack ghostStack = heldStack.copy();
         Vec3d pos = client.player.getPos().add(0, 0.3, 0);
@@ -37,7 +42,7 @@ public class FakeBugsEffects {
         );
         client.world.addEntity(ghostItem);
 
-        feedback(client, "§7[fakebugs] spawned a client-only ghost item (visual only)");
+        feedback(client, "§7[fakebugs] hotbar count doubled + ghost item dropped (visual only)");
     }
 
     public static void runGhostMob(MinecraftClient client) {
