@@ -6,6 +6,7 @@ public class CpsMod implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         CpsHud.register();
+        KeystrokesHud.register();
         FakeBugsCommands.register();
         FakeBugsKeybind.register();
     }
